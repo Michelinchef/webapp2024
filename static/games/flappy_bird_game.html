@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Bird</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f8ff;
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    canvas {
+      border: 2px solid #000;
+      background: #70c5ce;
+    }
+    .instructions {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .start-btn {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="text-primary">フラッピーバード</h1>
+  <button id="startGame" class="btn btn-success start-btn">ゲームを始める</button>
+  <canvas id="gameCanvas" width="1200" height="700" style="display: none;"></canvas>
+  <div class="instructions">
+    <h5>操作説明：</h5>
+    <ul>
+      <li>画面をクリックするかスペースキーを押して鳥を飛ばす</li>
+      <li>障害物を避ける</li>
+    </ul>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startGameButton = document.getElementById('startGame');
+
+    let bird;
+    let pipes;
+    let score;
+    let isGameOver;
+    let frames;
+
+    function initializeGame() {
+      bird = {
+        x: 50,
+        y: 150,
+        width: 20,
+        height: 20,
+        gravity: 0.1, 
+        lift: -4,     
+        velocity: 0,
+      };
+
+      pipes = [];
+      score = 0;
+      isGameOver = false;
+      frames = 0;
+    }
+
+    function drawBird() {
+      ctx.fillStyle = 'yellow';
+      ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+    }
+
+    function drawPipes() {
+      ctx.fillStyle = 'green';
+      pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
+        ctx.fillRect(pipe.x, pipe.top + pipeGap, pipeWidth, canvas.height - pipe.top - pipeGap);
+      });
+    }
+
+    function drawScore() {
+      ctx.fillStyle = 'black';
+      ctx.font = '20px Arial';
+      ctx.fillText(`スコア: ${score}`, 10, 30);
+    }
+
+    function updateBird() {
+      bird.velocity += bird.gravity;
+      bird.y += bird.velocity;
+
+      if (bird.y + bird.height > canvas.height || bird.y < 0) {
+        gameOver();
+      }
+    }
+
+    function updatePipes() {
+      if (frames % 250 === 0) { 
+        const top = Math.random() * (canvas.height / 2);
+        pipes.push({
+          x: canvas.width,
+          top,
+        });
+      }
+
+      pipes.forEach(pipe => {
+        pipe.x -= pipeSpeed;
+
+        if (pipe.x + pipeWidth < 0) {
+          pipes.shift();
+          score++;
+        }
+
+        // Check collision
+        if (
+          bird.x < pipe.x + pipeWidth &&
+          bird.x + bird.width > pipe.x &&
+          (bird.y < pipe.top || bird.y + bird.height > pipe.top + pipeGap)
+        ) {
+          gameOver();
+        }
+      });
+    }
+
+    function gameOver() {
+      isGameOver = true;
+      alert(`ゲームオーバー！スコア: ${score}`);
+      startGameButton.style.display = 'block';
+      canvas.style.display = 'none';
+    }
+
+    const pipeWidth = 100; 
+    const pipeGap = 280; 
+    const pipeSpeed = 1.5; 
+
+    function update() {
+      if (isGameOver) return;
+
+      frames++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      updateBird();
+      updatePipes();
+
+      drawBird();
+      drawPipes();
+      drawScore();
+
+      requestAnimationFrame(update);
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.code === 'Space') {
+        bird.velocity = bird.lift;
+      }
+    });
+
+    canvas.addEventListener('click', () => {
+      bird.velocity = bird.lift;
+    });
+
+    startGameButton.addEventListener('click', () => {
+      initializeGame();
+      startGameButton.style.display = 'none';
+      canvas.style.display = 'block';
+      update();
+    });
+
+    initializeGame();
+  </script>
+</body>
+</html>

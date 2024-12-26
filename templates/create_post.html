@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create and Manage Posts</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+
+  <!-- Quill.js CSS -->
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+  <style>
+    .quill-editor {
+      height: 200px;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+    .card-text {
+      color: #6c757d;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <!-- Page Header -->
+    <h1 class="text-center text-primary mb-4">Create and Manage Your Posts</h1>
+
+    <!-- Create Post Section -->
+    <div class="mb-5">
+      <h2>Create New Post</h2>
+      <form id="postForm">
+        <div class="mb-3">
+          <label for="title" class="form-label">Article Title</label>
+          <input type="text" id="title" class="form-control" placeholder="Enter the title" required>
+        </div>
+        <div class="mb-3">
+          <label for="category" class="form-label">Category</label>
+          <select id="category" class="form-select">
+            <option value="tech">Tech</option>
+            <option value="lifestyle">Lifestyle</option>
+            <option value="education">Education</option>
+            <option value="news">News</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="tags" class="form-label">Tags</label>
+          <input type="text" id="tags" class="form-control" placeholder="Add tags separated by commas">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Content</label>
+          <div id="editor" class="quill-editor"></div>
+        </div>
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary">Publish</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Manage Posts Section -->
+    <div>
+      <h2>Manage Your Posts</h2>
+      <div id="posts" class="row g-4"></div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Quill.js -->
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+  <script>
+    const token = localStorage.getItem("authToken");
+    const postsDiv = document.getElementById('posts');
+
+    // Initialize Quill editor
+    const quill = new Quill('#editor', {
+      theme: 'snow'
+    });
+
+    // Fetch and display user's posts
+    async function fetchPosts() {
+      try {
+        const response = await fetch('/api/posts', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const posts = await response.json();
+          if (posts.length > 0) {
+            postsDiv.innerHTML = posts.map(post => `
+              <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                  <div class="card-body">
+                    <h5 class="card-title">${post.title}</h5>
+                    <p class="card-text">${post.content.substring(0, 100)}...</p>
+                    <div class="action-buttons">
+                      <button class="btn btn-outline-primary btn-sm" onclick="editPost(${post.id}, '${post.title}', '${post.category}', '${post.tags}', \`${post.content}\`)">Edit</button>
+                      <button class="btn btn-outline-danger btn-sm" onclick="deletePost(${post.id})">Delete</button>
+                    </div>
+                  </div>
+                  <div class="card-footer text-muted">
+                    Posted on ${new Date(post.createdAt).toLocaleDateString()} | Category: ${post.category}
+                  </div>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            postsDiv.innerHTML = `<p class="text-center">No posts available.</p>`;
+          }
+        } else {
+          console.error('Failed to fetch posts.');
+        }
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+      }
+    }
+
+    // Publish new post
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const category = document.getElementById('category').value;
+      const tags = document.getElementById('tags').value.split(',').map(tag => tag.trim());
+      const content = quill.root.innerHTML;
+
+      try {
+        const response = await fetch('/api/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ title, category, tags, content })
+        });
+
+        if (response.ok) {
+          alert('Post published successfully!');
+          fetchPosts(); // Refresh the post list
+          document.getElementById('postForm').reset();
+          quill.setText('');
+        } else {
+          const error = await response.json();
+          alert(`Failed to publish post: ${error.message || 'Unknown error'}`);
+        }
+      } catch (err) {
+        console.error('Error publishing post:', err);
+      }
+    });
+
+    // Edit post
+    function editPost(id, title, category, tags, content) {
+      document.getElementById('title').value = title;
+      document.getElementById('category').value = category;
+      document.getElementById('tags').value = tags;
+      quill.root.innerHTML = content;
+      // Add logic for saving changes
+    }
+
+    // Delete post
+    async function deletePost(id) {
+      if (!id || id === "undefined") {
+        console.error("Invalid post ID:", id);
+        return;
+      }
+
+      if (confirm('Are you sure you want to delete this post?')) {
+        try {
+          const response = await fetch(`/api/posts/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (response.ok) {
+            alert('Post deleted successfully!');
+            fetchPosts(); // Refresh the post list
+          } else {
+            alert('Failed to delete post.');
+          }
+        } catch (err) {
+          console.error('Error deleting post:', err);
+        }
+      }
+    }
+
+    // Load posts on page load
+    fetchPosts();
+  </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Posts</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+
+  <style>
+    .card {
+      border: none;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #333;
+    }
+    .card-text {
+      color: #666;
+    }
+    .load-more {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .load-more button {
+      border-radius: 20px;
+      font-size: 1.2rem;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <!-- Page Header -->
+    <h1 class="text-center text-primary mb-4">All Posts</h1>
+
+    <!-- Posts Section -->
+    <div id="posts" class="row g-4"></div>
+
+    <!-- Load More Button -->
+    <div class="load-more">
+      <button id="loadMore" class="btn btn-outline-primary">Load More</button>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentPage = 1;
+    const postsDiv = document.getElementById('posts');
+    const loadMoreButton = document.getElementById('loadMore');
+    let isContentLoaded = false; // Ensure content is only loaded once
+
+    // Fetch posts from API
+    async function fetchPosts(page = 1) {
+      if (isContentLoaded) return; // Prevent multiple loads of the same content
+
+      try {
+        const response = await fetch(`/api/posts?page=${page}`);
+        if (response.ok) {
+          const posts = await response.json();
+          if (posts.length > 0) {
+            posts.forEach(post => {
+              const postCard = document.createElement('div');
+              postCard.className = 'col-md-4';
+              postCard.innerHTML = `
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">${post.title}</h5>
+                    <p class="card-text">${post.content.substring(0, 100)}...</p>
+                    <a href="/read-more/${post.id}" class="btn btn-primary">Read More</a>
+                  </div>
+                </div>
+              `;
+              postsDiv.appendChild(postCard);
+            });
+            isContentLoaded = true; // Mark content as loaded
+          } else {
+            loadMoreButton.disabled = true;
+            loadMoreButton.textContent = 'No More Posts';
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+      }
+    }
+
+    // Load initial posts
+    fetchPosts(currentPage);
+
+    // Load more posts on button click
+    loadMoreButton.addEventListener('click', () => {
+      currentPage++;
+      fetchPosts(currentPage);
+    });
+  </script>
+</body>
+</html>

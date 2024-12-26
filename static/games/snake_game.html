@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スネーク</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f8f9fa;
+    }
+    canvas {
+      border: 1px solid #000;
+      background-color: #fff;
+    }
+    #difficulty {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1 class="text-center text-primary">スネーク</h1>
+    <div id="difficulty" class="text-center">
+      <label for="speed" class="form-label">難易度を選択してください:</label>
+      <select id="speed" class="form-select w-50 mx-auto">
+        <option value="200">簡単</option>
+        <option value="100" selected>普通</option>
+        <option value="50">難しい</option>
+      </select>
+    </div>
+    <button id="start-btn" class="btn btn-success mb-3">ゲームを始める</button>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <p class="text-center mt-3">矢印キーを使って蛇を操作します</p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startBtn = document.getElementById('start-btn');
+    const speedSelector = document.getElementById('speed');
+
+    const boxSize = 20;
+    const canvasSize = 400;
+    let snake = [{ x: 200, y: 200 }];
+    let food = { x: randomPosition(), y: randomPosition() };
+    let direction = 'RIGHT';
+    let score = 0;
+    let intervalId;
+    let gameSpeed = parseInt(speedSelector.value);
+
+    function randomPosition() {
+      return Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+      else if (event.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+      else if (event.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+      else if (event.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+    });
+
+    function gameLoop() {
+      const head = { ...snake[0] };
+      if (direction === 'UP') head.y -= boxSize;
+      else if (direction === 'DOWN') head.y += boxSize;
+      else if (direction === 'LEFT') head.x -= boxSize;
+      else if (direction === 'RIGHT') head.x += boxSize;
+
+      if (
+        head.x < 0 || head.x >= canvasSize ||
+        head.y < 0 || head.y >= canvasSize ||
+        snake.some(segment => segment.x === head.x && segment.y === head.y)
+      ) {
+        alert(`ゲームオーバー！スコア: ${score}`);
+        clearInterval(intervalId);
+        resetGame();
+        return;
+      }
+
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        food = { x: randomPosition(), y: randomPosition() };
+      } else {
+        snake.pop();
+      }
+
+      snake.unshift(head);
+
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
+      ctx.fillStyle = 'green';
+      snake.forEach(segment => ctx.fillRect(segment.x, segment.y, boxSize, boxSize));
+
+      ctx.fillStyle = 'red';
+      ctx.fillRect(food.x, food.y, boxSize, boxSize);
+
+      ctx.fillStyle = 'black';
+      ctx.font = '16px Arial';
+      ctx.fillText(`スコア: ${score}`, 10, canvasSize - 10);
+    }
+
+    function startGame() {
+      resetGame();
+      gameSpeed = parseInt(speedSelector.value);
+      intervalId = setInterval(gameLoop, gameSpeed);
+    }
+
+    function resetGame() {
+      snake = [{ x: 200, y: 200 }];
+      food = { x: randomPosition(), y: randomPosition() };
+      direction = 'RIGHT';
+      score = 0;
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
+    }
+
+    startBtn.addEventListener('click', startGame);
+  </script>
+</body>
+</html>
