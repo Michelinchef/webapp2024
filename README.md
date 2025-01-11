@@ -26,6 +26,7 @@ WebApp 2024 は、GoとGinフレームワークを使用して開発された軽
 ```bash
 git clone https://github.com/Michelinchef/webapp2024.git
 cd webapp2024
+```
 
 ### 2. データベースの設定
 アプリケーションを実行する前に、データベースに接続する必要があります。
