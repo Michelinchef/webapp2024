@@ -34,12 +34,12 @@ cd webapp2024
 以下の手順に従って、デフォルトのデータベースを設定してください：
 
 1. **MySQLをインストール**（未インストールの場合）。
-   **新しいデータベースを作成**：
+2. **新しいデータベースを作成**：
    データベース名を `test` としてください。
    ```sql
    CREATE DATABASE test;
 
-2. **MySQLをインストール**（dockerの場合、おすすめ）。
+3. **MySQLをインストール**（dockerの場合、おすすめ）。
    ```
    docker pull mysql:latest
    docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=123456 -P 3306:3306 -d mysql: latest
@@ -47,7 +47,7 @@ cd webapp2024
    mysql -u root -p
    CREATE DATABASE test;
    docker ps
-
+   ```
 
 ### 3. 接続情報：
 
