@@ -1,16 +1,10 @@
 # WebApp 2024
+[点击查看HTML页面](https://github.com/Michelinchef/webapp2024/blob/main/static/games/flappy_bird_game.html)
 
 ## プロジェクト概要
 WebApp 2024 は、GoとGinフレームワークを使用して開発された軽量なWebアプリケーションです。MVCアーキテクチャを採用し、効率的かつモジュール化された開発をサポートします。
 
 ---
-
-## プロジェクト構成
-webapp2024/ ├── build/ # ビルド済みの実行ファイル ├── config/ # 設定ファイル ├── controller/ # コントローラーのロジック ├── models/ # データモデル ├── static/ # 静的リソース（CSS、JSなど） ├── templates/ # HTMLテンプレート ├── main.go # メインエントリーポイント ├── go.mod # Goモジュール設定 ├── go.sum # 依存関係情報
-
-
----
-
 ## 機能
 - Ginフレームワークを使用した軽量なWebアプリケーション。
 - 静的ファイルと動的HTMLテンプレートのレンダリングに対応。
@@ -55,15 +49,6 @@ cd webapp2024
 デフォルトの接続URL：
 root:123456@tcp(127.0.0.1:3306)/test?
 
-フォルダ説明
-
-    build/: ビルド済みの実行ファイルが格納されるフォルダ。
-    config/: アプリケーションの設定ファイル。
-    controller/: 業務ロジックを含むコントローラー。
-    models/: データモデルの定義。
-    static/: フロントエンドの静的リソース（例: CSS、JavaScript）。
-    templates/: 動的HTMLテンプレートが格納されるフォルダ。
-    main.go: プロジェクトのメインエントリーポイント。
 
 事前ビルド済みファイル
 
