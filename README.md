@@ -1,5 +1,4 @@
 # WebApp 2024
-[点击查看HTML页面](https://github.com/Michelinchef/webapp2024/blob/main/static/games/flappy_bird_game.html)
 
 ## プロジェクト概要
 WebApp 2024 は、GoとGinフレームワークを使用して開発された軽量なWebアプリケーションです。MVCアーキテクチャを採用し、効率的かつモジュール化された開発をサポートします。
